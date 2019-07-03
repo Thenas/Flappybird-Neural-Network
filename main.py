@@ -114,6 +114,6 @@ while RUN:
     pygame.display.update()    
     print(bird.score)  
     
-     
+      
 
 
