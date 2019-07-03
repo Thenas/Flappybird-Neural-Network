@@ -41,6 +41,8 @@ class birds:
         self.vy = 0.1
         self.t = 0
         self.score = 0
+        self.image = pygame.image.load('sprite1.png')
+        
     def update(self):
         self.vy += GRAV
         self.y += self.vy 
@@ -53,6 +55,7 @@ class birds:
 
     def draw(self, wind):
         pygame.draw.circle(wind, (244, 241, 66), (self.x, int(self.y)), self.r)
+        wind.blit(self.image, (self.x - self.r  , self.y - self.r))
         self.update()
 
 
@@ -112,9 +115,9 @@ while RUN:
          Pipe.draw(win)
     bird.draw(win)
     pygame.display.update()    
-    print(bird.score)  
+
     
-    #prueba
-    
+ 
+
 
 
