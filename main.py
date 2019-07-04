@@ -3,6 +3,8 @@ from os import system as sys
 import threading
 from random import randint as rand
 from time import sleep
+import NeuralNet as nNet
+import numpy as np
 
 #Constantes
 GRAV = 1
@@ -12,14 +14,15 @@ RUN = True
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
-global SCORE; SCORE = 0
+TOTAL = 50
+
 # Fin Constantes
 
 def collition(bird ,pipe):
-    global SCORE
     Xcollition  = (pipe.x <(bird.x+bird.r)< pipe.x + pipe.ancho) or (pipe.x<(bird.x - bird.r)< pipe.x + pipe.ancho) 
     Ycollition  =  ((bird.y + bird.r) > (pipe.y + pipe.largo))  or  ((bird.y - bird.r) < pipe.y)
     return Xcollition and Ycollition
+
 class birds:
     def __init__(self, x, y):
         self.x = x
@@ -30,12 +33,14 @@ class birds:
         self.vy = 0.1
         self.t = 0
         self.score = 0
+        self.fitness = 0
+        self.nn = nNet.NeuralNetwork([2,2,1],activation="tanh")
         self.image = pygame.image.load('sprite1.png')
         
     def update(self):
         self.vy += GRAV
         self.y += self.vy 
-        
+        self.score+=1
 
         if self.y > H : 
             self.vy = 0
@@ -48,8 +53,10 @@ class birds:
         self.update()
 
 
-    def up(self):
-       self.vy = -10
+    def think(self):
+       X = np.array([self.x,self.y])
+       if self.nn.predict(X)>0: self.vy = -10
+        
 
 class pipe:
     def __init__(self,x= W):
@@ -72,10 +79,10 @@ class pipe:
              self.y = int(rand(25,75)*H/100)  
          
 
+pajaros = list()
+for i in range(TOTAL):
+    pajaros.append(birds(100,int(640/2)))
 
-
-
-bird = birds(100,int(640/2))
 pipes = [pipe(), pipe(x=W +250)]
 
 pygame.init()
@@ -90,7 +97,7 @@ while RUN:
     for event in pygame.event.get():
         keyPressed = pygame.key.get_pressed()
         if event.type == pygame.QUIT: RUN = False
-        if(keyPressed[pygame.K_SPACE] and event.type == pygame.KEYDOWN): bird.up()
+
     win.fill((112, 196, 207))
     pygame.time.delay(17)
 
@@ -99,10 +106,14 @@ while RUN:
     #else: pipe1.color = (0,255,0)   
 
     for Pipe in pipes:
-         if collition(bird, Pipe): Pipe.color = RED
-         else: Pipe.color = GREEN
-         Pipe.draw(win)
-    bird.draw(win)
+        for pajaro in pajaros:
+        
+            if collition(pajaro, Pipe): Pipe.color = RED
+            else: Pipe.color = GREEN
+            pajaro.think()
+            pajaro.draw(win)
+        Pipe.draw(win)
+
     pygame.display.update()  
   
 
