@@ -2,6 +2,7 @@ import pygame
 from os import system as sys
 import threading
 from random import randint as rand
+from time import sleep
 
 #Constantes
 GRAV = 1
@@ -16,21 +17,9 @@ global SCORE; SCORE = 0
 
 def collition(bird ,pipe):
     global SCORE
-    rangoB = set(range(bird.x - bird.r, bird.x + bird.r))
-    rangoP = set(range(pipe.x, pipe.x+pipe.ancho))  
-    res = rangoB.intersection(rangoP)
-
-
-    
-    rangoB  = set(range(int(bird.y) - bird.r, int(bird.y) + bird.r))
-    rangoP = set(range(pipe.y, pipe.y + pipe.largo))  
-    res2 = rangoB.intersection(rangoP)
-
-    if    (pipe.x + pipe.ancho)  < (bird.x - bird.r) < (pipe.x + pipe.ancho + 2)   : bird.score+=1
-
-    if res and not res2: return True
-    else: return False
-    
+    Xcollition  = (pipe.x <(bird.x+bird.r)< pipe.x + pipe.ancho) or (pipe.x<(bird.x - bird.r)< pipe.x + pipe.ancho) 
+    Ycollition  =  ((bird.y + bird.r) > (pipe.y + pipe.largo))  or  ((bird.y - bird.r) < pipe.y)
+    return Xcollition and Ycollition
 class birds:
     def __init__(self, x, y):
         self.x = x
@@ -54,7 +43,7 @@ class birds:
          
 
     def draw(self, wind):
-        pygame.draw.circle(wind, (244, 241, 66), (self.x, int(self.y)), self.r)
+       # pygame.draw.circle(wind, (244, 241, 66), (self.x, int(self.y)), self.r)
         wind.blit(self.image, (self.x - self.r  , self.y - self.r))
         self.update()
 
@@ -114,7 +103,8 @@ while RUN:
          else: Pipe.color = GREEN
          Pipe.draw(win)
     bird.draw(win)
-    pygame.display.update()    
+    pygame.display.update()  
+  
 
     
  
