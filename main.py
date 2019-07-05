@@ -15,8 +15,36 @@ RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
 TOTAL = 50
+global GEN;GEN = 0
 
 # Fin Constantes
+
+def nextGen(pajaros, pipes) :
+    global GEN
+    scores = [] #guarda tuplas con el indice del pajaro y su puntuacion 
+    for i in range(len(pajaros)):
+        scores.append((i,pajaros[i].score))
+    scores.sort(reverse = True,key= lambda item:item[1])
+    parents = [pajaros[scores[0][0]],pajaros[scores[1][0]]]
+
+    w1 = np.array(parents[0].nn.weights)
+    w2 = np.array(parents[1].nn.weights)
+
+    wt = (w1+w2)/2
+    pajarosNuevos = []
+
+    for i in range(TOTAL):
+        pajarosNuevos.append(birds(100,rand(25,75)*H/100))
+        pajarosNuevos[i].weights = np.ndarray.tolist(wt * 0.2)
+    
+    pipes[0].x = W
+    pipes[1].x = W + 250 
+    GEN = GEN + 1
+    print("Generacion:",GEN,"          ","PuntacionMax: ", scores[0][1])
+    return pajarosNuevos
+    
+
+
 
 def collition(bird ,pipe):
     Xcollition  = (pipe.x <(bird.x+bird.r)< pipe.x + pipe.ancho) or (pipe.x<(bird.x - bird.r)< pipe.x + pipe.ancho) 
@@ -34,7 +62,7 @@ class birds:
         self.t = 0
         self.score = 0
         self.fitness = 0
-        self.nn = nNet.NeuralNetwork([2,2,1],activation="tanh")
+        self.nn = nNet.NeuralNetwork([4,2,1],activation="tanh")
         self.image = pygame.image.load('sprite1.png')
         
     def update(self):
@@ -53,11 +81,10 @@ class birds:
         self.update()
 
 
-    def think(self):
-       X = np.array([self.x,self.y])
+    def think(self, pipe):
+       X = np.array([self.x,self.y,pipe.x,pipe.y])
        if self.nn.predict(X)>0: self.vy = -10
         
-
 class pipe:
     def __init__(self,x= W):
         
@@ -78,19 +105,16 @@ class pipe:
              self.x = W-20
              self.y = int(rand(25,75)*H/100)  
          
-
+pajarosMuertos = list() 
 pajaros = list()
-for i in range(TOTAL):
-    pajaros.append(birds(100,int(640/2)))
-
+for i in range(TOTAL):pajaros.append(birds(100,rand(25,75)*H/100))
 pipes = [pipe(), pipe(x=W +250)]
+
+
 
 pygame.init()
 win = pygame.display.set_mode((W,H))
 pygame.display.set_caption("fappy bird :V")
-
-
-
 
 
 while RUN:
@@ -99,21 +123,23 @@ while RUN:
         if event.type == pygame.QUIT: RUN = False
 
     win.fill((112, 196, 207))
-    pygame.time.delay(17)
+    pygame.time.delay(1)
 
-    
-    #if(collition(bird,pipe1)):pipe1.color = (255,0,0)
-    #else: pipe1.color = (0,255,0)   
 
     for Pipe in pipes:
         for pajaro in pajaros:
         
-            if collition(pajaro, Pipe): Pipe.color = RED
+            if collition(pajaro, Pipe): 
+                pajarosMuertos.append(pajaro)
+                pajaros.pop(pajaros.index(pajaro))
             else: Pipe.color = GREEN
-            pajaro.think()
+            pajaro.think(Pipe)
             pajaro.draw(win)
-        Pipe.draw(win)
-
+        Pipe.draw(win) 
+    if len(pajaros) == 0: 
+        pajaros=nextGen(pajarosMuertos,pipes)
+        pajarosMuertos = []
+       
     pygame.display.update()  
   
 
