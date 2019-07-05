@@ -35,10 +35,13 @@ def nextGen(pajaros, pipes) :
 
     for i in range(TOTAL):
         pajarosNuevos.append(birds(100,rand(25,75)*H/100))
-        pajarosNuevos[i].weights = np.ndarray.tolist(wt * 0.2)
+        pajarosNuevos[i].weights = np.ndarray.tolist(wt * rand(0,100)/100)
     
     pipes[0].x = W
     pipes[1].x = W + 250 
+    pipes[0].y = int(rand(25,75)*H/100)
+    pipes[1].y = int(rand(25,75)*H/100)
+
     GEN = GEN + 1
     print("Generacion:",GEN,"          ","PuntacionMax: ", scores[0][1])
     return pajarosNuevos
@@ -62,7 +65,7 @@ class birds:
         self.t = 0
         self.score = 0
         self.fitness = 0
-        self.nn = nNet.NeuralNetwork([4,2,1],activation="tanh")
+        self.nn = nNet.NeuralNetwork([6,4,3,2,1],activation="tanh")
         self.image = pygame.image.load('sprite1.png')
         
     def update(self):
@@ -82,7 +85,7 @@ class birds:
 
 
     def think(self, pipe):
-       X = np.array([self.x,self.y,pipe.x,pipe.y])
+       X = np.array([self.x,self.y,pipe[0].x,pipe[0].y,pipe[1].x,pipe[1].y])
        if self.nn.predict(X)>0: self.vy = -10
         
 class pipe:
@@ -123,7 +126,7 @@ while RUN:
         if event.type == pygame.QUIT: RUN = False
 
     win.fill((112, 196, 207))
-    pygame.time.delay(1)
+    #pygame.time.delay(1)
 
 
     for Pipe in pipes:
@@ -133,7 +136,7 @@ while RUN:
                 pajarosMuertos.append(pajaro)
                 pajaros.pop(pajaros.index(pajaro))
             else: Pipe.color = GREEN
-            pajaro.think(Pipe)
+            pajaro.think(pipes)
             pajaro.draw(win)
         Pipe.draw(win) 
     if len(pajaros) == 0: 
