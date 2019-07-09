@@ -9,12 +9,12 @@ import numpy as np
 #------------------Constantes--------------#
 GRAV = 1
 H = 650
-W = 450
+W = 500
 RUN = True
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
-TOTAL = 50
+TOTAL = 500
 ARQUI = [2,3,1]
 global GEN;GEN = 0
 
@@ -39,17 +39,18 @@ def crossOver(bird1,bird2):
 
     return birdChild
 
-
-
-#--------------------------------------------#
-
-
-#---------------Clases-----------------------#
+def shift(l, n): return l[n:] + l[:n]
 
 def collition(bird ,pipe):
     Xcollition  = (pipe.x <(bird.x+bird.r)< pipe.x + pipe.ancho) or (pipe.x<(bird.x - bird.r)< pipe.x + pipe.ancho) 
     Ycollition  =  ((bird.y + bird.r) > (pipe.y + pipe.largo))  or  ((bird.y - bird.r) < pipe.y)
     return Xcollition and Ycollition
+#--------------------------------------------#
+
+
+#---------------Clases-----------------------#
+
+
 
 class birds:
     def __init__(self,y):
@@ -58,7 +59,6 @@ class birds:
         self.r = 20
         self.vy = 0.1
         self.score = 0
-        self.fitness = 0
         self.nn = nNet.NeuralNetwork(ARQUI,activation="tanh")
         self.image = pygame.image.load('sprite1.png')
         
@@ -98,11 +98,12 @@ class pipe:
         #pygame.draw.rect(wind, self.color, (self.x, self.y, self.ancho, self.largo)) # area para pasar
         pygame.draw.rect(wind, self.color, (self. x ,self.y + self.largo , self.ancho, H))
         self.x-=2
-        if (self.x+ self.ancho) < 0:
-             self.x = W-20
-             self.y = int(rand(25,75)*H/100)  
-
-
+  
+    def update(self):
+        if self.x + self.ancho < 0:
+            self.x = W +20
+            self.y = int(rand(25,75)*H/100)
+            return True
 #--------------------------------------------#   
 
 #--------inicialización de pygame------------#
@@ -117,9 +118,10 @@ pygame.display.set_caption("fappy bird :V")
 pajaros = []
 pipes = []
 lovePool = []
+deadPool = []
 
 for i in range(TOTAL):pajaros.append(birds(y=int(rand(10,90)*H/100)))
-for i in range(1,3):pipes.append(pipe(x=W*i))
+for i in range(2):pipes.append(pipe(x=W + 300*i))
 
 
 
@@ -132,14 +134,34 @@ while RUN:
 
 
 #-----------------Draw-----------------------#
+   
+    for pip in pipes:
+        if pipes[0].update():
+             pipes.remove(pipes[0])
+             pipes.append(pipe())
+        pip.draw(win)
+        
+        pygame.draw.circle(win, (0,0,0), (pipes[0].x + int(pipes[0].ancho/2),40), 15)
+
     for pajaro in pajaros:
-         pajaro.think(pipes[0])
-         pajaro.draw(win)
+        pajaro.think(pipes[0])
+
+        if collition(pajaro, pipes[0]):
+            deadPool.append(pajaro)
+            pajaros.remove(pajaro)
+        pajaro.draw(win)
+    
+#--------------------------------------------#
+
+#-----------------Coques y demas ------------#
+
 
 #--------------------------------------------#
 
 
 
+
+    pygame.time.delay(10)
     pygame.display.update()  
   
 
