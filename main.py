@@ -1,8 +1,6 @@
 import pygame
-from os import system as sys
-import threading
+from os import system as sys # windows 10 
 from random import randint as rand
-from time import sleep
 import NeuralNet as nNet
 import numpy as np
 
@@ -14,7 +12,7 @@ RUN = True
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
-TOTAL = 50
+TOTAL = 100
 ARQUI = [2,3,1]
 global GEN;GEN = 0
 
@@ -39,12 +37,18 @@ def crossOver(bird1,bird2):
 
     return birdChild
 
-def shift(l, n): return l[n:] + l[:n]
-
 def collition(bird ,pipe):
     Xcollition  = (pipe.x <(bird.x+bird.r)< pipe.x + pipe.ancho) or (pipe.x<(bird.x - bird.r)< pipe.x + pipe.ancho) 
     Ycollition  =  ((bird.y + bird.r) > (pipe.y + pipe.largo))  or  ((bird.y - bird.r) < pipe.y)
     return Xcollition and Ycollition
+
+def mutate(bird,mutateRange):
+    for i in range(len(bird.nn.weights)):
+        for j in range(len(bird.nn.weights[i])):
+            for k in range(len(bird.nn.weights[i][j])):
+                bird.nn.weights[i][j][k] *= float(rand(-50,50)/100)
+
+    
 #--------------------------------------------#
 
 
@@ -59,6 +63,7 @@ class birds:
         self.r = 20
         self.vy = 0.1
         self.score = 0
+        self.fintess = 0
         self.nn = nNet.NeuralNetwork(ARQUI,activation="tanh")
         self.image = pygame.image.load('sprite1.png')
         
@@ -119,6 +124,7 @@ pajaros = []
 pipes = []
 lovePool = []
 deadPool = []
+maxScore = 0
 
 for i in range(TOTAL):pajaros.append(birds(y=int(rand(10,90)*H/100)))
 for i in range(2):pipes.append(pipe(x=W + 300*i))
@@ -141,7 +147,7 @@ while RUN:
              pipes.append(pipe())
         pip.draw(win)
         
-        pygame.draw.circle(win, (0,0,0), (pipes[0].x + int(pipes[0].ancho/2),40), 15)
+        pygame.draw.circle(win, (0,0,0), (pipes[0].x + int(pipes[0].ancho/2),40), 15)  # indicador  de el tuvo de entrada 
 
     for pajaro in pajaros:
         pajaro.think(pipes[0])
@@ -153,7 +159,34 @@ while RUN:
     
 #--------------------------------------------#
 
-#-----------------Coques y demas ------------#
+
+
+#------------------------------------------------#
+
+#-----------------Genetica------------#
+    if len(pajaros) == 0:
+
+        #selección natural
+        lovePool = []
+        maxScore
+        sumScore = sum([bird.score for bird in deadPool])
+        promScore = sumScore/len(deadPool)
+        for pajaro in deadPool: # calcular 
+            pajaro.fitness = pajaro.score/promScore
+            if pajaro.fitness > maxScore: maxScore = pajaro.fitness
+            for i in range(int(pajaro.fitness * 100)): lovePool.append(pajaro)
+
+        # nueva poblacion
+        for i in range(TOTAL):
+            pajaros.append( crossOver(lovePool[rand(0,len(lovePool))],lovePool[rand(0,len(lovePool))]))
+
+
+        # mutacion
+        for pajaro in pajaros: mutate(pajaro,20)
+        
+        pipes = []
+        for i in range(2):pipes.append(pipe(x=W + 300*i))  
+#-----------------Choques y demas ------------#
 
 
 #--------------------------------------------#
@@ -161,12 +194,11 @@ while RUN:
 
 
 
+   # sys("cls")
     pygame.time.delay(10)
     pygame.display.update()  
   
 
     
  
-
-
 
