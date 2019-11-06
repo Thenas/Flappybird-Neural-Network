@@ -12,9 +12,9 @@ RUN = True
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
-TOTAL = 100
+TOTAL = 30
 ARQUI = [2,3,1]
-global GEN;GEN = 0
+global GEN;GEN = 1
 
 #--------------------------------------------#
 
@@ -22,6 +22,11 @@ global GEN;GEN = 0
 
 
 #-------------funciones----------------------#
+def texts(score,wind):
+   font= pygame.font.SysFont("Arial",30)
+   scoretext=font.render("Generacion:"+str(score), 1,(255,255,255))
+   wind.blit(scoretext, (0, 0))
+
 def crossOver(bird1,bird2):
     if rand(0,100)>50:
 
@@ -133,6 +138,7 @@ for i in range(2):pipes.append(pipe(x=W + 300*i))
 
 #--------------------------------------------#
 while RUN:
+    
     for event in pygame.event.get():
         keyPressed = pygame.key.get_pressed()
         if event.type == pygame.QUIT: RUN = False
@@ -141,6 +147,7 @@ while RUN:
 
 #-----------------Draw-----------------------#
    
+
     for pip in pipes:
         if pipes[0].update():
              pipes.remove(pipes[0])
@@ -156,7 +163,7 @@ while RUN:
             deadPool.append(pajaro)
             pajaros.remove(pajaro)
         pajaro.draw(win)
-    
+    texts(GEN,win)
 #--------------------------------------------#
 
 
@@ -186,16 +193,14 @@ while RUN:
         
         pipes = []
         for i in range(2):pipes.append(pipe(x=W + 300*i))  
+        GEN += 1
 #-----------------Choques y demas ------------#
 
 
 #--------------------------------------------#
 
-
-
-
    # sys("cls")
-    pygame.time.delay(10)
+   #pygame.time.delay(10)
     pygame.display.update()  
   
 
